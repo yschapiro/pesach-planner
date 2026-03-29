@@ -949,10 +949,14 @@ Return ONLY valid JSON, no markdown, no explanation.`
     const resp = await fetch(API_BASE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': state.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-opus-4-5', max_tokens: 4000, messages: [{ role: 'user', content: allContent }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, messages: [{ role: 'user', content: allContent }] })
     });
 
-    if (!resp.ok) { throw new Error(`API error: ${resp.status}`); }
+    if (!resp.ok) {
+      const errBody = await resp.json().catch(() => ({}));
+      const errMsg = errBody?.error?.message || JSON.stringify(errBody);
+      throw new Error(`API ${resp.status}: ${errMsg}`);
+    }
     const data = await resp.json();
     const rawText = data.content[0].text;
 
