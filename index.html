@@ -965,10 +965,12 @@ Return ONLY valid JSON, no markdown, no explanation.`
 
     let parsed;
     try {
-      const clean = rawText.replace(/```json|```/g, '').trim();
-      parsed = JSON.parse(clean);
+      // Grab the first { ... } block regardless of markdown wrapping
+      const match = rawText.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('No JSON object found in response');
+      parsed = JSON.parse(match[0]);
     } catch(e) {
-      setStatus('⚠️ Could not parse AI response as JSON. Check Raw Reading below.');
+      setStatus('⚠️ Could not parse AI response: ' + e.message);
       return;
     }
 
